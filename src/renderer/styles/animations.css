@@ -1,0 +1,102 @@
+/* ============================================================
+   animations.css — Keyframes y animaciones
+   SPEC: Sección 2 — Efectos visuales
+   ============================================================ */
+
+/* ─── Pulse del dot de grabación ─────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* ─── Ring del botón REC ─────────────────────────────────── */
+@keyframes ring-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5),
+                inset 0 0 12px rgba(239, 68, 68, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.8),
+                inset 0 0 20px rgba(239, 68, 68, 0.15);
+  }
+}
+
+/* ─── Slide up (paneles flotantes) ───────────────────────── */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ─── Fade in genérico ────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Spinner ─────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Glow pulsante (acento azul) ────────────────────────── */
+@keyframes glow-pulse-blue {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 170, 255, 0.6);
+  }
+}
+
+/* ─── Text cursor blink ───────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Cursor de escritura en transcript */
+.transcript-text::after {
+  content: '|';
+  opacity: 0;
+  animation: blink 1s step-end infinite;
+}
+
+.transcript-text.active::after {
+  opacity: 1;
+}
+
+/* ─── Waveform bar bounce ─────────────────────────────────── */
+@keyframes waveform-idle {
+  0%, 100% { height: 4px; }
+  50%       { height: 8px; }
+}
+
+/* ─── Copy success flash ──────────────────────────────────── */
+@keyframes flash-green {
+  0%   { background: rgba(34, 197, 94, 0.3); border-color: rgba(34, 197, 94, 0.6); }
+  100% { background: rgba(255,255,255,0.04); border-color: var(--border-default); }
+}
+
+.result-btn.copied {
+  animation: flash-green 0.8s ease forwards;
+  color: var(--accent-green) !important;
+}
+
+/* ─── Toolbar button active bounce ───────────────────────── */
+.toolbar-btn:active {
+  transform: scale(0.93);
+}
+
+/* ─── Panel backdrop ──────────────────────────────────────── */
+.panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-panel) - 1);
+  pointer-events: auto;
+}

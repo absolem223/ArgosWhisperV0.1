@@ -1,0 +1,171 @@
+/* ============================================================
+   global.css — Reset + Variables CSS
+   SPEC: Sección 2 — Diseño Visual
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ─── CSS Custom Properties ──────────────────────────────── */
+:root {
+  /* Colores base */
+  --bg-primary:      #0a0d1a;
+  --bg-secondary:    #0d1633;
+  --bg-panel:        #111827;
+  --bg-panel-hover:  #162040;
+  --bg-input:        #0d1633;
+
+  /* Acentos */
+  --accent-blue:     #00aaff;
+  --accent-violet:   #7c3aed;
+  --accent-red:      #ef4444;
+  --accent-green:    #22c55e;
+  --accent-yellow:   #f59e0b;
+
+  /* Bordes */
+  --border-default:  #1e2a4a;
+  --border-accent:   rgba(0, 170, 255, 0.35);
+  --border-violet:   rgba(124, 58, 237, 0.4);
+
+  /* Texto */
+  --text-primary:    #f0f4ff;
+  --text-secondary:  #8899bb;
+  --text-muted:      #4a5a7a;
+  --text-accent:     #00aaff;
+
+  /* Glassmorphism */
+  --glass-bg:        rgba(13, 22, 51, 0.75);
+  --glass-border:    rgba(0, 170, 255, 0.12);
+
+  /* Sombras */
+  --shadow-panel:    0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow-blue: 0 0 20px rgba(0, 170, 255, 0.25);
+  --shadow-glow-red:  0 0 30px rgba(239, 68, 68, 0.55);
+
+  /* Transiciones */
+  --transition-fast:  0.15s ease;
+  --transition-med:   0.25s ease;
+  --transition-slow:  0.35s ease;
+
+  /* Tipografía */
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-xs:  10px;
+  --font-size-sm:  12px;
+  --font-size-md:  14px;
+  --font-size-lg:  16px;
+  --font-size-xl:  18px;
+  --font-size-2xl: 22px;
+
+  /* Layout */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+
+  /* Z-index */
+  --z-panel:   100;
+  --z-overlay: 200;
+}
+
+/* ─── Reset ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  font-family: var(--font-main);
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
+
+/* ─── Drag regions ────────────────────────────────────────── */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* ─── Buttons reset ───────────────────────────────────────── */
+button {
+  font-family: var(--font-main);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  outline: none;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* ─── Input reset ─────────────────────────────────────────── */
+input, select, textarea {
+  font-family: var(--font-main);
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.15);
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+/* ─── Utility classes ─────────────────────────────────────── */
+.hidden {
+  display: none !important;
+}
+
+.placeholder {
+  opacity: 0.4;
+  font-style: italic;
+}
+
+.loading-text {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  padding: 12px;
+  text-align: center;
+}

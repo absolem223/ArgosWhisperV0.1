@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self';" />
+  <title>Argos Whisper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="theme-dark-blue">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       VENTANA PRINCIPAL
+  ══════════════════════════════════════════════════════════════════ -->
+  <div id="app-root">
+
+    <!-- HEADER — draggable, logo, controles -->
+    <header id="app-header" class="app-header drag-region">
+      <div class="header-left no-drag">
+        <div class="app-logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="12" stroke="#00aaff" stroke-width="2"/>
+            <circle cx="14" cy="14" r="7" stroke="#7c3aed" stroke-width="1.5"/>
+            <circle cx="14" cy="14" r="3" fill="#00aaff"/>
+            <path d="M14 2 L14 6 M14 22 L14 26 M2 14 L6 14 M22 14 L26 14" stroke="#00aaff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="app-title">
+          <span class="title-argos">argos</span>
+          <span class="title-whisper">whisper</span>
+        </div>
+      </div>
+
+      <div class="header-right no-drag">
+        <div id="connection-status" class="status-indicator">
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-label" id="status-label">Conectando...</span>
+        </div>
+        <button class="window-btn" id="btn-minimize" title="Minimizar" aria-label="Minimizar">
+          <svg width="12" height="2" viewBox="0 0 12 2"><path d="M1 1h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="window-btn" id="btn-close" title="Cerrar" aria-label="Cerrar">
+          <svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- TRANSCRIPT DISPLAY — texto en vivo + waveform -->
+    <section id="transcript-section" class="transcript-section">
+      <div id="transcript-display" class="transcript-display">
+        <p id="transcript-text" class="transcript-text placeholder">
+          Presiona REC para comenzar a transcribir...
+        </p>
+      </div>
+      <div class="waveform-row">
+        <span id="recording-indicator" class="recording-indicator hidden">
+          <span class="rec-dot"></span>
+          <span>Grabando...</span>
+        </span>
+        <canvas id="waveform-canvas" class="waveform-canvas" width="400" height="48" aria-label="Visualizador de audio"></canvas>
+      </div>
+    </section>
+
+    <!-- TOOLBAR CENTRAL -->
+    <div id="toolbar" class="toolbar">
+      <button class="toolbar-btn" id="btn-edit" title="Panel de edición" aria-label="Editar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        <span class="btn-label">Editar</span>
+      </button>
+
+      <button class="toolbar-btn" id="btn-llm" title="Selector de modelo LLM" aria-label="llm">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+        <span class="btn-label">llm</span>
+      </button>
+
+      <button class="toolbar-btn" id="btn-saveload" title="Guardar/Cargar ejemplos" aria-label="s/l">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+        </svg>
+        <span class="btn-label">s/l</span>
+      </button>
+
+      <!-- BOTÓN REC CENTRAL -->
+      <button id="btn-record" class="record-btn" title="Iniciar/Detener grabación" aria-label="Grabar" aria-pressed="false">
+        <div class="record-btn-ring"></div>
+        <div class="record-btn-inner">
+          <span class="rec-icon-circle" id="rec-icon"></span>
+        </div>
+      </button>
+
+      <button class="toolbar-btn" id="btn-info" title="Información" aria-label="Info">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span class="btn-label">Info</span>
+      </button>
+
+      <button class="toolbar-btn" id="btn-theme" title="Cambiar tema" aria-label="TH">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+        <span class="btn-label">TH</span>
+      </button>
+
+      <button class="toolbar-btn" id="btn-settings" title="Ajustes" aria-label="Ajustes">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span class="btn-label">Ajustes</span>
+      </button>
+    </div>
+
+    <!-- PANELES FLOTANTES (se muestran/ocultan sobre el toolbar) -->
+
+    <!-- EDIT PANEL -->
+    <div id="panel-edit" class="floating-panel hidden" role="dialog" aria-label="Panel de edición">
+      <div class="panel-header">
+        <span class="panel-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Editar
+        </span>
+        <button class="panel-close" data-panel="edit" aria-label="Cerrar">✕</button>
+      </div>
+
+      <!-- Ortografía -->
+      <div class="edit-section" id="section-spellcheck">
+        <button class="section-toggle" data-target="content-spellcheck" aria-expanded="true">
+          <span>🔤 Ortografía</span>
+          <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="section-content" id="content-spellcheck">
+          <p class="section-desc">Corrección ortográfica local, sin IA</p>
+          <button class="action-btn" id="btn-apply-spellcheck">Aplicar corrección</button>
+          <div id="spellcheck-result" class="sub-result hidden"></div>
+        </div>
+      </div>
+
+      <!-- Cambiar estilo -->
+      <div class="edit-section" id="section-style">
+        <button class="section-toggle" data-target="content-style" aria-expanded="false">
+          <span>✨ Cambiar estilo</span>
+          <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="section-content collapsed" id="content-style">
+          <select class="style-select" id="style-preset-select" aria-label="Estilo de escritura">
+            <option value="formal">Formal / Profesional</option>
+            <option value="informal">Informal / Coloquial</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="email">Email corporativo</option>
+            <option value="academic">Académico</option>
+          </select>
+          <button class="action-btn" id="btn-apply-style">Aplicar estilo</button>
+        </div>
+      </div>
+
+      <!-- Resumir -->
+      <div class="edit-section" id="section-summarize">
+        <button class="section-toggle" data-target="content-summarize" aria-expanded="false">
+          <span>📝 Resumir</span>
+          <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="section-content collapsed" id="content-summarize">
+          <p class="section-desc">Acorta el texto manteniendo el significado</p>
+          <button class="action-btn" id="btn-apply-summarize">Resumir texto</button>
+        </div>
+      </div>
+
+      <!-- Traducir -->
+      <div class="edit-section" id="section-translate">
+        <button class="section-toggle" data-target="content-translate" aria-expanded="false">
+          <span>🌐 Traducir</span>
+          <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="section-content collapsed" id="content-translate">
+          <select class="style-select" id="translate-lang-select" aria-label="Idioma destino">
+            <option value="en">Inglés</option>
+            <option value="es">Español</option>
+            <option value="pt">Portugués</option>
+            <option value="fr">Francés</option>
+            <option value="de">Alemán</option>
+          </select>
+          <button class="action-btn" id="btn-apply-translate">Traducir</button>
+        </div>
+      </div>
+
+      <div id="edit-loading" class="panel-loading hidden">
+        <div class="spinner"></div>
+        <span>Procesando...</span>
+      </div>
+    </div>
+
+    <!-- LLM PANEL — selector de modelo -->
+    <div id="panel-llm" class="floating-panel hidden" role="dialog" aria-label="Selector de modelo">
+      <div class="panel-header">
+        <span class="panel-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          Modelo LLM
+        </span>
+        <button class="panel-close" data-panel="llm" aria-label="Cerrar">✕</button>
+      </div>
+      <div id="model-list" class="model-list">
+        <div class="loading-text">Cargando modelos...</div>
+      </div>
+      <div class="panel-footer-note">
+        Los modelos se cargan desde LM Studio
+      </div>
+    </div>
+
+    <!-- SAVE/LOAD PANEL -->
+    <div id="panel-saveload" class="floating-panel hidden" role="dialog" aria-label="Guardar y cargar ejemplos">
+      <div class="panel-header">
+        <span class="panel-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Ejemplos Few-Shot (s/l)
+        </span>
+        <button class="panel-close" data-panel="saveload" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="saveload-actions">
+        <input type="text" id="fewshot-name-input" class="panel-input" placeholder="Nombre del ejemplo..." aria-label="Nombre del ejemplo" />
+        <button class="action-btn accent" id="btn-save-fewshot">Guardar actual</button>
+      </div>
+      <div id="fewshot-list" class="fewshot-list">
+        <div class="loading-text">Sin ejemplos guardados</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div id="panel-settings" class="floating-panel settings-panel hidden" role="dialog" aria-label="Ajustes">
+      <div class="panel-header">
+        <span class="panel-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Ajustes
+        </span>
+        <button class="panel-close" data-panel="settings" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="lm-url-input">URL del runtime LLM</label>
+        <div class="input-row">
+          <input type="text" id="lm-url-input" class="panel-input" value="http://localhost:1234" aria-label="URL del runtime LLM" />
+          <button class="icon-btn" id="btn-test-llm" title="Verificar conexión">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </button>
+        </div>
+        <span id="lm-status-text" class="settings-note"></span>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label">Modelo Whisper</label>
+        <select id="whisper-model-select" class="style-select" aria-label="Modelo Whisper">
+          <option value="tiny">Tiny (más rápido)</option>
+          <option value="base">Base</option>
+          <option value="small" selected>Small (recomendado)</option>
+          <option value="medium">Medium</option>
+          <option value="large-v3">Large v3 (mayor calidad)</option>
+        </select>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label">Idioma de transcripción</label>
+        <select id="whisper-lang-select" class="style-select" aria-label="Idioma de transcripción">
+          <option value="auto">Auto-detectar</option>
+          <option value="es">Español</option>
+          <option value="en">Inglés</option>
+          <option value="pt">Portugués</option>
+          <option value="fr">Francés</option>
+          <option value="de">Alemán</option>
+        </select>
+      </div>
+
+      <button class="action-btn full-width" id="btn-save-settings">Guardar ajustes</button>
+    </div>
+
+    <!-- THEME PANEL -->
+    <div id="panel-theme" class="floating-panel hidden" role="dialog" aria-label="Selector de tema">
+      <div class="panel-header">
+        <span class="panel-title">Tema visual</span>
+        <button class="panel-close" data-panel="theme" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="theme-list" id="theme-list">
+        <button class="theme-option active" data-theme="dark-blue" aria-pressed="true">
+          <span class="theme-swatch theme-swatch-dark-blue"></span>
+          Dark Blue
+        </button>
+        <button class="theme-option" data-theme="dark-mono" aria-pressed="false">
+          <span class="theme-swatch theme-swatch-dark-mono"></span>
+          Dark Mono
+        </button>
+        <button class="theme-option" data-theme="dark-green" aria-pressed="false">
+          <span class="theme-swatch theme-swatch-dark-green"></span>
+          Dark Green
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT PANEL — texto modificado -->
+    <section id="result-section" class="result-section">
+      <div class="result-header">
+        <div class="result-title-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00aaff" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <h2 class="result-title">texto modificado</h2>
+        </div>
+        <span id="result-badge" class="result-badge hidden">Optimizado ✓</span>
+      </div>
+
+      <div id="result-content" class="result-content">
+        <p id="result-text" class="result-text placeholder">
+          El resultado de la transformación aparecerá aquí...
+        </p>
+      </div>
+
+      <div class="result-actions">
+        <button class="result-btn" id="btn-copy" title="Copiar al portapapeles" aria-label="Copiar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          copiar
+        </button>
+        <button class="result-btn" id="btn-regenerate" title="Volver a generar" aria-label="Regenerar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          volver a generar
+        </button>
+        <button class="result-btn like-btn" id="btn-like" title="Me gusta" aria-label="Me gusta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          me gusta
+        </button>
+        <button class="result-btn dislike-btn" id="btn-dislike" title="No me gusta" aria-label="No me gusta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+          no me gusta
+        </button>
+      </div>
+    </section>
+
+    <!-- STATUS BAR -->
+    <footer id="status-bar" class="status-bar">
+      <div class="status-left">
+        <span class="status-dot-sm" id="status-dot-sm"></span>
+        <span id="status-bar-label">Conectado</span>
+      </div>
+      <div class="status-right">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00aaff" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span id="status-model-label">Whisper: small</span>
+      </div>
+    </footer>
+
+  </div><!-- /#app-root -->
+
+</body>
+</html>
