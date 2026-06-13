@@ -9,7 +9,6 @@
 
 import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
-import * as struct from 'buffer';
 import { EventEmitter } from 'events';
 import { ITranscriptionEngine } from '../../shared/types';
 

@@ -42,11 +42,13 @@ export function initSettingsPanel(state: AppState, panelManager: PanelManager): 
     const whisperModel = (document.getElementById('whisper-model-select') as HTMLSelectElement | null)?.value;
     const whisperLang = (document.getElementById('whisper-lang-select') as HTMLSelectElement | null)?.value;
     const llmUrl = lmUrlInput?.value;
+    const pythonPath = (document.getElementById('python-path-input') as HTMLInputElement | null)?.value;
 
     await window.argosAPI.settings.set({
       ...(whisperModel && { whisperModel }),
       ...(whisperLang && { whisperLanguage: whisperLang }),
       ...(llmUrl && { llmRuntimeUrl: llmUrl }),
+      ...(pythonPath && { pythonPath }),
     });
 
     // Actualizar status bar

@@ -4,7 +4,7 @@
  * SPEC: Sección 5 — IPC Channels Tipados
  */
 
-import { ipcMain, BrowserWindow, clipboard } from 'electron';
+import { ipcMain, BrowserWindow } from 'electron';
 import { IPC } from '../../shared/ipc';
 import { AudioCaptureService } from '../audio/AudioCaptureService';
 import { WhisperService } from '../transcription/WhisperService';
@@ -52,6 +52,7 @@ export function registerIpcHandlers(
       if (!whisper) {
         whisper = new WhisperService({
           projectRoot,
+          pythonPath: settings.pythonPath,
           model: settings.whisperModel,
           language: args?.language ?? settings.whisperLanguage,
         });

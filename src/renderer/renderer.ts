@@ -63,6 +63,7 @@ declare global {
           activeTheme: string;
           activeFewShotId: string | null;
           shortcuts: Record<string, string>;
+          pythonPath: string;
         }>;
         set(partial: Record<string, unknown>): Promise<{ success: boolean }>;
       };
@@ -125,6 +126,9 @@ async function init(): Promise<void> {
 
     const whisperLang = document.getElementById('whisper-lang-select') as HTMLSelectElement | null;
     if (whisperLang) whisperLang.value = settings.whisperLanguage;
+
+    const pythonPathInput = document.getElementById('python-path-input') as HTMLInputElement | null;
+    if (pythonPathInput) pythonPathInput.value = settings.pythonPath || 'python';
 
     const statusModelLabel = document.getElementById('status-model-label');
     if (statusModelLabel) {

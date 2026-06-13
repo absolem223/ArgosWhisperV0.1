@@ -5,14 +5,13 @@
  */
 
 import { BrowserWindow, screen, ipcMain } from 'electron';
-import * as path from 'path';
 import { IPC } from '../../shared/ipc';
 
 export class WindowManager {
   private mainWindow: BrowserWindow | null = null;
 
   create(preloadPath: string, rendererPath: string): BrowserWindow {
-    const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+    const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize;
 
     this.mainWindow = new BrowserWindow({
       width: 620,

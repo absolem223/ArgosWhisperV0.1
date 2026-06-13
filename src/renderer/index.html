@@ -256,12 +256,17 @@
       <div class="settings-group">
         <label class="settings-label">Modelo Whisper</label>
         <select id="whisper-model-select" class="style-select" aria-label="Modelo Whisper">
-          <option value="tiny">Tiny (más rápido)</option>
+          <option value="tiny" selected>Tiny (más rápido)</option>
           <option value="base">Base</option>
-          <option value="small" selected>Small (recomendado)</option>
+          <option value="small">Small (recomendado)</option>
           <option value="medium">Medium</option>
           <option value="large-v3">Large v3 (mayor calidad)</option>
         </select>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="python-path-input">Ejecutable de Python</label>
+        <input type="text" id="python-path-input" class="panel-input" value="python" aria-label="Ejecutable de Python" />
       </div>
 
       <div class="settings-group">

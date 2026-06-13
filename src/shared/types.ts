@@ -63,13 +63,14 @@ export interface AppSettings {
   activeTheme: string;
   activeFewShotId: string | null;
   shortcuts: Record<string, string>;
+  pythonPath: string;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   llmRuntimeUrl: 'http://localhost:1234',
   activeModelId: '',
   modelPerPreset: {},
-  whisperModel: 'small',
+  whisperModel: 'tiny',
   whisperLanguage: 'auto',
   activeTheme: 'dark-blue',
   activeFewShotId: null,
@@ -77,6 +78,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     toggleRecord: 'Space',
     copyResult: 'Ctrl+C',
   },
+  pythonPath: 'python',
 };
 
 // ─── History ──────────────────────────────────────────────────────────────────
