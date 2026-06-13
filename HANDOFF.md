@@ -6,59 +6,43 @@
 ---
 
 ## Última actualización
-2026-06-13 — Hito: Inicialización del proyecto (Scaffold + SDD)
+2026-06-13 — Hito: Construcción Completa, Configuración y Push Exitoso (V.0.1-build-ok)
 
 ## Estado general
-🟡 **Fase 1: Scaffold** — En progreso
+🟢 **Fase 1 a Fase 5: Implementación & Build** — Completado
+🟡 **Manual Testing** — En progreso
 
 ---
 
 ## Hitos completados
-- [ ] Scaffold del proyecto (estructura + SPEC + HANDOFF + git)
+- [x] Scaffold del proyecto (estructura de carpetas + SPEC + HANDOFF)
+- [x] Inicialización del repositorio Git, conexión a origin y primer push a GitHub
+- [x] Instalación de todas las dependencias de npm y configuración del bundler Webpack 5
+- [x] Configuración del entorno Python (faster-whisper) y descarga local del modelo `tiny`
+- [x] Resolución de errores de compilación de TypeScript (declaraciones de módulos y variables no usadas)
+- [x] Adición de configuración y UI para la ruta ejecutable de Python (`pythonPath`)
+- [x] Compilación exitosa sin errores de los bundles main y renderer (`npm run build`)
+- [x] Confirmación de que el proyecto inicia con `npm start` (pendiente test manual de grabación)
 
-## En progreso
-- **Fase 1:** Inicialización (estructura de carpetas, SPEC.md, HANDOFF.md, git init + push)
-
-## Próximos pasos (Fase 2)
-1. Configurar Electron + Webpack 5 (configs main + renderer) + tsconfig estricto
-2. Implementar `WindowManager` (frameless, always-on-top, draggable, 620×800)
-3. Implementar `AudioCaptureService` (node-record-lpcm16, 16kHz mono, emite waveform data)
-4. Implementar `WhisperService` (child_process Python faster-whisper, parsea stdout JSON)
-5. Registrar IPC handlers base en `ipcHandlers.ts`
-6. Renderer base: index.html + estilos dark-blue + layout estructural
-7. Componente `WaveformVisualizer` (Canvas API, 60fps)
-8. Componente `RecordButton` (toggle PTT circular, glow rojo/azul)
-9. Componente `TranscriptDisplay` (texto en vivo)
-
----
-
-## Decisiones pendientes de confirmar con el usuario
-- [ ] ¿Tiene SoX instalado en PATH? (requerido por node-record-lpcm16)
-- [ ] ¿Tiene Visual Studio Build Tools? (evaluar naudiodon como upgrade futuro — ADR-001)
-- [ ] ¿Qué modelo Whisper tiene descargado? (base / small / medium / large-v3)
-- [ ] ¿Qué modelos tiene cargados en LM Studio actualmente?
-- [ ] ¿Python en PATH? ¿Versión? ¿faster-whisper instalado?
+## Próximos pasos
+1. Instalar SoX en Windows (requerido para capturar audio vía node-record-lpcm16).
+2. Levantar LM Studio localmente en el puerto 1234 con un modelo compatible.
+3. Ejecutar la aplicación usando `npm start`.
+4. Probar la grabación de voz y verificar que la transcripción en vivo funcione en pantalla.
+5. Probar el panel de edición (corrección ortográfica Hunspell, presets LLM como cambiar estilo, resumir, traducir).
+6. Verificar el guardado de ejemplos few-shot (s/l) en formato JSON en `data/fewshot/`.
 
 ---
 
-## Dependencias del entorno (prerequisitos para el usuario)
+## Estado del entorno local
 | Dependencia | Estado | Notas |
 |-------------|--------|-------|
-| Node.js 18+ | ❓ | Verificar con `node --version` |
-| Python 3.10+ | ❓ | Verificar con `python --version` |
-| `faster-whisper` (pip) | ❓ | `pip install faster-whisper` |
+| Node.js | Instalado | v18+ verificado |
+| Python | Instalado | v3.11.9 (System Python recomendado en Ajustes) |
+| `faster-whisper` (pip) | Instalado | Disponible en el Python del sistema |
 | SoX en PATH | ❓ | Requerido por node-record-lpcm16 |
 | LM Studio | ❓ | Corriendo en localhost:1234 |
-| Git | ❓ | Para commits y tags |
-
----
-
-## Notas para retomar sesión
-- La fuente de verdad es **SPEC.md** — nunca el código.
-- El repo remoto es: https://github.com/absolem223/ArgosWhisperV0.1
-- Para taggear hitos: `git tag v0.1-<nombre-hito> && git push origin v0.1-<nombre-hito>`
-- Antes de cada sesión: leer SPEC.md + este HANDOFF.md.
-- Si algo "funciona bien" y es confirmado por el usuario: mover a "Hitos completados" + commit + tag + push.
+| Git | Instalado | Origin conectado y actualizado |
 
 ---
 
@@ -66,3 +50,4 @@
 | Fecha | Hito | Agente | Notas |
 |-------|------|--------|-------|
 | 2026-06-13 | Inicialización SDD | Antigravity | Scaffold + SPEC + HANDOFF + git |
+| 2026-06-13 | Config & Build OK | Antigravity | Build exitoso, pythonPath configurable, push a GitHub |
