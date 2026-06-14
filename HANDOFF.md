@@ -31,6 +31,7 @@
 - [x] Configuración automática del path de Python 3.11 (`C:\Users\Nahuel\AppData\Local\Programs\Python\Python311\python.exe`) en el archivo de settings persistido
 - [x] Implementación de 4 mejoras de UX/UI: texto de transcripción editable al detener grabación con sincronización al estado global, unificación de indicadores de estado en barra inferior, retry LLM cada 15 segundos y modelo Whisper predeterminado 'small'
 - [x] Transcripción en vivo acumulada y editable — FUNCIONANDO
+- [x] Selector de modelos Whisper (tiny/small/medium) cargando localmente desde models/ — FUNCIONANDO
 
 ## Próximos pasos
 1. Instalar SoX en Windows (requerido para capturar audio vía node-record-lpcm16).
@@ -65,3 +66,4 @@
 | 2026-06-14 | Fix de pipeline de grabación | Antigravity | WhisperService detecta crash prematuro de Python y rechaza Promise inmediatamente; RecordButton con debouncing y reset completo de UI en errores |
 | 2026-06-14 | Mejoras de UX & UI | Antigravity | Transcripción editable con sync de estado en tiempo real, barra de estado inferior consolidada, retry automático LLM de 15s y modelo por defecto 'small' |
 | 2026-06-14 | Fix de acumulación de texto & robustez | Antigravity | Corregida la acumulación de texto entre segmentos usando sessionText; prevenida caídas del proceso main capturando errores de stream EPIPE en subprocesses y registrando global exception logs |
+| 2026-06-14 | Selector de modelos Whisper local | Antigravity | Configurado download_root en whisper_server.py para leer modelos locales y verificado el soporte funcional en Ajustes |

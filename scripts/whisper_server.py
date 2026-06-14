@@ -39,9 +39,11 @@ def emit_final(text: str):
 
 def load_model(model_size: str, device: str = "auto"):
     try:
+        import os
         from faster_whisper import WhisperModel
         compute_type = "int8" if device == "cpu" else "float16"
-        model = WhisperModel(model_size, device=device, compute_type=compute_type)
+        models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models'))
+        model = WhisperModel(model_size, device=device, compute_type=compute_type, download_root=models_dir)
         print(json.dumps({"type": "ready", "model": model_size}), flush=True)
         return model
     except ImportError:
