@@ -35,10 +35,6 @@
       </div>
 
       <div class="header-right no-drag">
-        <div id="connection-status" class="status-indicator">
-          <span class="status-dot" id="status-dot"></span>
-          <span class="status-label" id="status-label">Conectando...</span>
-        </div>
         <button class="window-btn" id="btn-minimize" title="Minimizar" aria-label="Minimizar">
           <svg width="12" height="2" viewBox="0 0 12 2"><path d="M1 1h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
@@ -256,9 +252,9 @@
       <div class="settings-group">
         <label class="settings-label">Modelo Whisper</label>
         <select id="whisper-model-select" class="style-select" aria-label="Modelo Whisper">
-          <option value="tiny" selected>Tiny (más rápido)</option>
+          <option value="tiny">Tiny (más rápido)</option>
           <option value="base">Base</option>
-          <option value="small">Small (recomendado)</option>
+          <option value="small" selected>Small (recomendado)</option>
           <option value="medium">Medium</option>
           <option value="large-v3">Large v3 (mayor calidad)</option>
         </select>
@@ -351,6 +347,8 @@
       <div class="status-right">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00aaff" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span id="status-model-label">Whisper: small</span>
+        <span class="status-separator">·</span>
+        <span id="status-llm-label" style="color:#8899bb">LLM: desconectado</span>
       </div>
     </footer>
 

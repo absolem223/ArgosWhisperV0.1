@@ -29,6 +29,8 @@
 - [x] Corrección de pipeline de grabación: `WhisperService.ts` detecta cierre prematuro del proceso Python y rechaza la Promise inmediatamente (en lugar de esperar 60 segundos de timeout)
 - [x] Corrección de sincronización de UI en `RecordButton.ts`: debouncing con `isActionPending` para evitar clicks superpuestos, y reset completo del estado visual (statusDot, statusDotSm, statusBarLabel, recordingIndicator) al recibir un error de transcripción
 - [x] Configuración automática del path de Python 3.11 (`C:\Users\Nahuel\AppData\Local\Programs\Python\Python311\python.exe`) en el archivo de settings persistido
+- [x] Implementación de 4 mejoras de UX/UI: texto de transcripción editable al detener grabación con sincronización al estado global, unificación de indicadores de estado en barra inferior, retry LLM cada 15 segundos y modelo Whisper predeterminado 'small'
+- [x] Transcripción en vivo acumulada y editable — FUNCIONANDO
 
 ## Próximos pasos
 1. Instalar SoX en Windows (requerido para capturar audio vía node-record-lpcm16).
@@ -61,3 +63,5 @@
 | 2026-06-14 | Fix de Bloqueantes | Antigravity | Solucionado ERR_REQUIRE_ESM degradando dictionary-en a v3, y bloqueada apertura de DevTools en produccion |
 | 2026-06-14 | Fix de CSP EvalError | Antigravity | Configurado devtool a 'source-map' en webpack.renderer.config.js para respetar la CSP de la app |
 | 2026-06-14 | Fix de pipeline de grabación | Antigravity | WhisperService detecta crash prematuro de Python y rechaza Promise inmediatamente; RecordButton con debouncing y reset completo de UI en errores |
+| 2026-06-14 | Mejoras de UX & UI | Antigravity | Transcripción editable con sync de estado en tiempo real, barra de estado inferior consolidada, retry automático LLM de 15s y modelo por defecto 'small' |
+| 2026-06-14 | Fix de acumulación de texto & robustez | Antigravity | Corregida la acumulación de texto entre segmentos usando sessionText; prevenida caídas del proceso main capturando errores de stream EPIPE en subprocesses y registrando global exception logs |

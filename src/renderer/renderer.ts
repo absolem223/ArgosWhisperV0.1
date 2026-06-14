@@ -153,23 +153,6 @@ async function init(): Promise<void> {
   initSettingsPanel(state, panelManager);
   initThemeSwitcher(state, panelManager);
   initToolbarStatus(state);
-
-  // Verificar conexión LLM al iniciar
-  checkLLMConnection();
-}
-
-async function checkLLMConnection(): Promise<void> {
-  const dot = document.getElementById('status-dot');
-  const label = document.getElementById('status-label');
-
-  try {
-    const { ready } = await window.argosAPI.llm.isReady();
-    if (dot) dot.className = `status-dot ${ready ? 'connected' : 'error'}`;
-    if (label) label.textContent = ready ? 'Conectado' : 'LLM desconectado';
-  } catch {
-    if (dot) dot.className = 'status-dot error';
-    if (label) label.textContent = 'Sin conexión';
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

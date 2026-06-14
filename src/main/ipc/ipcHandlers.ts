@@ -72,6 +72,12 @@ export function registerIpcHandlers(
     try {
       // Crear WhisperService si no existe
       if (!whisper) {
+        console.log('[IPC] ── TRANSCRIPTION_START ───────────────────────────');
+        console.log('[IPC] settings.pythonPath:', settings.pythonPath);
+        console.log('[IPC] settings.whisperModel:', settings.whisperModel);
+        console.log('[IPC] language (args):', args?.language, '| settings.whisperLanguage:', settings.whisperLanguage);
+        console.log('[IPC] projectRoot:', projectRoot);
+
         whisper = new WhisperService({
           projectRoot,
           pythonPath: settings.pythonPath,
@@ -80,24 +86,36 @@ export function registerIpcHandlers(
         });
 
         whisper.onPartialResult((text) => {
+          console.log('[IPC] ✔ PARTIAL result recibido → enviando al renderer:', text);
           mainWindow.webContents.send(IPC.TRANSCRIPTION_PARTIAL, { text });
         });
 
         whisper.onFinalResult((text) => {
+          console.log('[IPC] ✔✔ FINAL result recibido → enviando al renderer:', text);
           mainWindow.webContents.send(IPC.TRANSCRIPTION_FINAL, { text });
         });
 
         whisper.on('error', (err: Error) => {
+          console.error('[IPC] ✘ ERROR de WhisperService:', err.message);
           mainWindow.webContents.send(IPC.TRANSCRIPTION_ERROR, { message: err.message });
         });
 
+        console.log('[IPC] Iniciando WhisperService.start()...');
         await whisper.start();
+        console.log('[IPC] WhisperService listo y esperando audio.');
+      } else {
+        console.log('[IPC] WhisperService ya existe, reutilizando.');
       }
 
       // Iniciar captura de audio
       audio!.removeAllListeners();
+      let audioChunkCount = 0;
 
       audio!.on('data', (chunk: Buffer) => {
+        audioChunkCount++;
+        if (audioChunkCount % 20 === 1) {
+          console.log(`[IPC] Audio chunk #${audioChunkCount} de SoX → ${chunk.length} bytes → enviando a WhisperService`);
+        }
         whisper?.sendAudioChunk(chunk);
       });
 
@@ -106,13 +124,17 @@ export function registerIpcHandlers(
       });
 
       audio!.on('error', (err: Error) => {
+        console.error('[IPC] ✘ ERROR de AudioCaptureService:', err.message);
         mainWindow.webContents.send(IPC.TRANSCRIPTION_ERROR, { message: err.message });
       });
 
+      console.log('[IPC] Iniciando AudioCaptureService...');
       audio!.start();
+      console.log('[IPC] AudioCaptureService iniciado. Pipeline activo.');
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      console.error('[IPC] ✘ Error en TRANSCRIPTION_START:', message);
       return { success: false, error: message };
     }
   });

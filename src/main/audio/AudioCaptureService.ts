@@ -13,14 +13,39 @@
  */
 
 import { EventEmitter } from 'events';
-import * as recorder from 'node-record-lpcm16';
+import { spawn, ChildProcess } from 'child_process';
+import * as fs from 'fs';
+
+/**
+ * Resolve la ruta al ejecutable sox.exe.
+ * Electron no hereda el PATH del shell del usuario, así que buscamos
+ * en las rutas de instalación típicas de Windows antes de recurrir
+ * al nombre desnudo (que funciona si está en PATH del sistema).
+ */
+function resolveSoxPath(): string {
+  const candidates = [
+    'C:\\Program Files (x86)\\sox-14-4-2\\sox.exe',
+    'C:\\Program Files\\sox-14-4-2\\sox.exe',
+    'C:\\Program Files (x86)\\SoX\\sox.exe',
+    'C:\\Program Files\\SoX\\sox.exe',
+    'C:\\tools\\sox\\sox.exe',
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      console.log('[AudioCaptureService] SoX encontrado en:', candidate);
+      return candidate;
+    }
+  }
+  console.log('[AudioCaptureService] SoX no encontrado en rutas conocidas, usando \'sox\' del PATH');
+  return 'sox';
+}
 
 const SAMPLE_RATE = 16000;
 const WAVEFORM_BUCKETS = 64;
 const WAVEFORM_INTERVAL_MS = 50;
 
 export class AudioCaptureService extends EventEmitter {
-  private recording: ReturnType<typeof recorder.record> | null = null;
+  private soxProcess: ChildProcess | null = null;
   private isRecording = false;
   private waveformBuffer: number[] = [];
   private waveformTimer: NodeJS.Timeout | null = null;
@@ -32,25 +57,69 @@ export class AudioCaptureService extends EventEmitter {
     this.waveformBuffer = [];
 
     try {
-      this.recording = recorder.record({
-        sampleRate: SAMPLE_RATE,
-        channels: 1,
-        audioType: 'raw',
-        recorder: 'sox',
-        silence: '0',
-      });
+      // Spawn SoX directly with the Windows waveaudio driver.
+      // node-record-lpcm16 always passes --default-device which fails on Windows;
+      // using -t waveaudio default works correctly.
+      const soxBin = resolveSoxPath();
+      this.soxProcess = spawn(soxBin, [
+        '-t', 'waveaudio', 'default',
+        '--no-show-progress',
+        '--rate', String(SAMPLE_RATE),
+        '--channels', '1',
+        '--encoding', 'signed-integer',
+        '--bits', '16',
+        '--type', 'raw',
+        '-',
+      ]);
 
-      const stream = this.recording.stream();
+      const stream = this.soxProcess.stdout!;
 
       stream.on('data', (chunk: Buffer) => {
         this.emit('data', chunk);
         this.processChunkForWaveform(chunk);
       });
 
-      stream.on('error', (err: Error) => {
-        console.error('[AudioCaptureService] Error de stream:', err);
+      stream.on('error', (err) => {
+        console.error('[AudioCaptureService] Error en soxProcess.stdout:', err);
+      });
+
+      this.soxProcess.stdin?.on('error', (err) => {
+        console.error('[AudioCaptureService] Error en soxProcess.stdin:', err);
+      });
+
+      this.soxProcess.stderr?.on('error', (err) => {
+        console.error('[AudioCaptureService] Error en soxProcess.stderr:', err);
+      });
+
+      this.soxProcess.stderr?.on('data', (data: Buffer) => {
+        // SoX imprime progreso en stderr — no es necesariamente un error
+        const msg = data.toString().trim();
+        if (msg) console.log('[AudioCaptureService] SoX stderr:', msg);
+      });
+
+      this.soxProcess.on('error', (err: Error) => {
+        console.error('[AudioCaptureService] Error de proceso SoX:', err);
         this.emit('error', err);
         this.stop();
+      });
+
+      this.soxProcess.on('close', (code: number | null, signal: NodeJS.Signals | null) => {
+        if (!this.isRecording) {
+          // Cierre esperado: stop() ya puso isRecording=false antes de llamar kill()
+          return;
+        }
+        if (code === null) {
+          // Terminado por señal (ej: SIGTERM desde kill()) — no es un error
+          console.log('[AudioCaptureService] SoX terminado por señal:', signal);
+          return;
+        }
+        if (code !== 0) {
+          // Salida inesperada con error real
+          const err = new Error(`sox ha salido inesperadamente con código ${code}`);
+          console.error('[AudioCaptureService]', err.message);
+          this.emit('error', err);
+          this.stop();
+        }
       });
 
       // Emitir waveform a intervalos regulares
@@ -83,9 +152,9 @@ export class AudioCaptureService extends EventEmitter {
       this.waveformTimer = null;
     }
 
-    if (this.recording) {
-      this.recording.stop();
-      this.recording = null;
+    if (this.soxProcess) {
+      this.soxProcess.kill();
+      this.soxProcess = null;
     }
 
     console.log('[AudioCaptureService] Grabación detenida');

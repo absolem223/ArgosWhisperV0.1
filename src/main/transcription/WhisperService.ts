@@ -33,7 +33,7 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
       pythonPath: options.pythonPath ?? 'python',
       model: options.model ?? 'small',
       language: options.language ?? 'auto',
-      device: options.device ?? 'auto',
+      device: options.device ?? 'cpu',
       projectRoot: options.projectRoot,
     };
   }
@@ -49,13 +49,30 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
     return new Promise((resolve, reject) => {
       let resolved = false;
 
-      this.process = spawn(this.options.pythonPath, [
+      const spawnArgs = [
         scriptPath,
         '--model', this.options.model,
         '--language', this.options.language,
         '--device', this.options.device,
-      ], {
+      ];
+      console.log('[WhisperService] ── LANZANDO SUBPROCESS ──────────────────────');
+      console.log('[WhisperService] Ejecutable:', this.options.pythonPath);
+      console.log('[WhisperService] Argumentos:', spawnArgs.join(' '));
+      console.log('[WhisperService] Script path existe?', require('fs').existsSync(scriptPath));
+
+      this.process = spawn(this.options.pythonPath, spawnArgs, {
         stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      console.log('[WhisperService] PID del proceso Python:', this.process.pid);
+
+      this.process.stdin?.on('error', (err) => {
+        console.error('[WhisperService] Error en process.stdin:', err);
+      });
+      this.process.stdout?.on('error', (err) => {
+        console.error('[WhisperService] Error en process.stdout:', err);
+      });
+      this.process.stderr?.on('error', (err) => {
+        console.error('[WhisperService] Error en process.stderr:', err);
       });
 
       const timeout = setTimeout(() => {
@@ -79,8 +96,10 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
 
         for (const line of lines) {
           if (!line.trim()) continue;
+          console.log('[WhisperService] stdout RAW:', line);
           try {
             const msg = JSON.parse(line) as { type: string; text?: string; message?: string; model?: string };
+            console.log('[WhisperService] stdout JSON parseado → type:', msg.type, msg.text ? '| text:' + msg.text : '');
             this.handleMessage(msg, () => {
               if (!resolved) {
                 resolved = true;
@@ -89,13 +108,16 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
               }
             });
           } catch (e) {
-            console.warn('[WhisperService] Línea no JSON:', line);
+            console.warn('[WhisperService] Línea no JSON (ignorada):', line);
           }
         }
       });
 
       this.process.stderr?.on('data', (data: Buffer) => {
-        console.log('[Whisper Python]', data.toString());
+        const lines = data.toString().split('\n').filter(l => l.trim());
+        for (const line of lines) {
+          console.log('[WhisperService] stderr:', line);
+        }
       });
 
       this.process.on('error', (err) => {
@@ -108,13 +130,13 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
         }
       });
 
-      this.process.on('close', (code) => {
-        console.log(`[WhisperService] Proceso cerrado con código ${code}`);
+      this.process.on('close', (code, signal) => {
+        console.log(`[WhisperService] ── PROCESO CERRADO ─ código: ${code} | señal: ${signal}`);
         this.process = null;
         if (!resolved) {
           resolved = true;
           clearTimeout(timeout);
-          reject(new Error(`El proceso de Whisper terminó inesperadamente con código ${code}`));
+          reject(new Error(`El proceso de Whisper terminó inesperadamente con código ${code} (señal: ${signal})`));
         }
       });
     });
@@ -181,8 +203,22 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
    * Envía un chunk de audio PCM al proceso Python.
    * Protocolo: [4 bytes uint32 LE = longitud] + [N bytes PCM data]
    */
+  private _chunkCount = 0;
+  private _totalBytes = 0;
+
   sendAudioChunk(chunk: Buffer): void {
     if (!this.process?.stdin || this.process.stdin.destroyed) return;
+
+    this._chunkCount++;
+    this._totalBytes += chunk.length;
+
+    // Log cada 20 chunks (~1 segundo de audio) para no saturar la terminal
+    if (this._chunkCount % 20 === 1) {
+      console.log(
+        `[WhisperService] Enviando chunk #${this._chunkCount} al Python` +
+        ` | tamaño: ${chunk.length} bytes | total acumulado: ${this._totalBytes} bytes`
+      );
+    }
 
     const lengthBuffer = Buffer.alloc(4);
     lengthBuffer.writeUInt32LE(chunk.length, 0);

@@ -1,42 +1,59 @@
 /**
  * src/renderer/components/ToolbarStatus/ToolbarStatus.ts
- * Componente de barra de estado inferior.
+ * Barra de estado inferior — único indicador de estado de la app.
+ *
+ * Izquierda: dot + estado grabación (● Grabando / ● Conectado / ● LLM desconectado)
+ * Derecha:   Whisper: <model> | LLM: conectado / desconectado
+ *
+ * Hace polling silencioso al LLM cada 15 segundos.
  * SPEC: Sección 8 — ToolbarStatus
  */
 
 import { AppState } from '../../renderer';
 
 export function initToolbarStatus(state: AppState): void {
-  // El ToolbarStatus es principalmente reactivo desde otros componentes.
-  // Este init verifica la conexión LLM y actualiza el status inicial.
+  const dotSm = document.getElementById('status-dot-sm');
+  const barLabel = document.getElementById('status-bar-label');
+  const llmLabel = document.getElementById('status-llm-label');
 
-  void state; // disponible para extensiones futuras
-
-  // Verificar estado de LLM cada 30 segundos
-  async function checkStatus(): Promise<void> {
-    const dot = document.getElementById('status-dot-sm');
-    const label = document.getElementById('status-bar-label');
-
-    if (state.isRecording) return; // No interrumpir estado de grabación
+  /**
+   * Actualiza el indicador de LLM en la esquina derecha de la barra.
+   * Nunca muestra error — solo "conectado" o "desconectado".
+   */
+  async function checkLLM(): Promise<void> {
+    // No sobrescribir el estado de grabación activo
+    if (state.isRecording) return;
 
     try {
       const { ready } = await window.argosAPI.llm.isReady();
-      if (dot) {
-        dot.style.background = ready ? '#22c55e' : '#ef4444';
-        dot.style.boxShadow = ready ? '0 0 4px #22c55e' : '0 0 4px #ef4444';
+
+      if (llmLabel) {
+        llmLabel.textContent = ready ? 'LLM: conectado' : 'LLM: desconectado';
+        llmLabel.style.color = ready ? '#22c55e' : '#8899bb';
       }
-      if (label && !state.isRecording) {
-        label.textContent = ready ? 'Conectado' : 'LLM desconectado';
+
+      // Actualizar dot solo si no estamos grabando
+      if (!state.isRecording) {
+        if (dotSm) {
+          dotSm.style.background = ready ? '#22c55e' : '#8899bb';
+          dotSm.style.boxShadow = ready ? '0 0 4px #22c55e' : 'none';
+        }
+        if (barLabel && barLabel.textContent !== 'Grabando...') {
+          barLabel.textContent = ready ? 'Conectado' : 'LLM desconectado';
+        }
       }
     } catch {
-      if (dot) {
-        dot.style.background = '#4a5a7a';
-        dot.style.boxShadow = 'none';
+      // Fallo silencioso — solo marcar como desconectado
+      if (llmLabel) {
+        llmLabel.textContent = 'LLM: desconectado';
+        llmLabel.style.color = '#8899bb';
       }
     }
   }
 
-  // Verificación inicial con delay para no bloquear init
-  setTimeout(checkStatus, 2000);
-  setInterval(checkStatus, 30000);
+  // Verificación inicial con pequeño delay para no bloquear el boot
+  setTimeout(checkLLM, 1500);
+
+  // Retry automático cada 15 segundos
+  setInterval(checkLLM, 15000);
 }

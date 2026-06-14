@@ -9,6 +9,14 @@ import * as path from 'path';
 import { WindowManager } from './window/WindowManager';
 import { registerIpcHandlers, cleanupIpcHandlers } from './ipc/ipcHandlers';
 
+process.on('uncaughtException', (err) => {
+  console.error('[Main] Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Main] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const DATA_ROOT = path.join(PROJECT_ROOT, 'data');
 

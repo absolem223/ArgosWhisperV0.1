@@ -1,6 +1,7 @@
 /**
  * src/renderer/components/RecordButton/RecordButton.ts
  * Botón REC central — toggle start/stop grabación.
+ * Emite custom events para coordinar con TranscriptDisplay y ToolbarStatus.
  * SPEC: Sección 8 — RecordButton
  */
 
@@ -9,8 +10,6 @@ import { AppState } from '../../renderer';
 export function initRecordButton(state: AppState): void {
   const btn = document.getElementById('btn-record') as HTMLButtonElement | null;
   const recordingIndicator = document.getElementById('recording-indicator');
-  const statusDot = document.getElementById('status-dot');
-  const statusLabel = document.getElementById('status-label');
   const statusDotSm = document.getElementById('status-dot-sm');
   const statusBarLabel = document.getElementById('status-bar-label');
 
@@ -49,15 +48,14 @@ export function initRecordButton(state: AppState): void {
     btn!.setAttribute('aria-pressed', 'true');
 
     recordingIndicator?.classList.remove('hidden');
-    if (statusDot) {
-      statusDot.className = 'status-dot recording';
-    }
-    if (statusLabel) statusLabel.textContent = 'Grabando...';
     if (statusDotSm) {
       statusDotSm.style.background = '#ef4444';
       statusDotSm.style.boxShadow = '0 0 4px #ef4444';
     }
     if (statusBarLabel) statusBarLabel.textContent = 'Grabando...';
+
+    // Notificar a TranscriptDisplay para limpiar y salir del modo editable
+    document.dispatchEvent(new CustomEvent('argos:recording-started'));
   }
 
   async function stopRecording(): Promise<void> {
@@ -68,22 +66,24 @@ export function initRecordButton(state: AppState): void {
     btn!.setAttribute('aria-pressed', 'false');
 
     recordingIndicator?.classList.add('hidden');
-    if (statusDot) statusDot.className = 'status-dot connected';
-    if (statusLabel) statusLabel.textContent = 'Conectado';
     if (statusDotSm) {
       statusDotSm.style.background = '#22c55e';
       statusDotSm.style.boxShadow = '0 0 4px #22c55e';
     }
     if (statusBarLabel) statusBarLabel.textContent = 'Conectado';
+
+    // Notificar a TranscriptDisplay para entrar en modo editable
+    document.dispatchEvent(new CustomEvent('argos:recording-stopped'));
   }
 
   function showError(message: string): void {
-    if (statusLabel) {
-      statusLabel.textContent = message;
-      statusLabel.style.color = '#ef4444';
+    if (statusBarLabel) {
+      statusBarLabel.textContent = message;
+      const origColor = statusBarLabel.style.color;
+      statusBarLabel.style.color = '#ef4444';
       setTimeout(() => {
-        statusLabel!.textContent = 'Conectado';
-        statusLabel!.style.color = '';
+        statusBarLabel!.textContent = 'Conectado';
+        statusBarLabel!.style.color = origColor;
       }, 3000);
     }
   }
@@ -96,11 +96,9 @@ export function initRecordButton(state: AppState): void {
     btn!.setAttribute('aria-pressed', 'false');
     recordingIndicator?.classList.add('hidden');
 
-    if (statusDot) statusDot.className = 'status-dot connected';
     if (statusDotSm) {
       statusDotSm.style.background = '#22c55e';
       statusDotSm.style.boxShadow = '0 0 4px #22c55e';
     }
-    if (statusBarLabel) statusBarLabel.textContent = 'Conectado';
   });
 }

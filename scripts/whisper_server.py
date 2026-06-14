@@ -144,7 +144,7 @@ def main():
                         help="Tamaño del modelo Whisper")
     parser.add_argument("--language", default="auto",
                         help="Idioma ('auto' para detección automática, 'es', 'en', etc.)")
-    parser.add_argument("--device", default="auto",
+    parser.add_argument("--device", default="cpu",
                         choices=["auto", "cpu", "cuda"],
                         help="Dispositivo de cómputo")
     args = parser.parse_args()

@@ -70,7 +70,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   llmRuntimeUrl: 'http://localhost:1234',
   activeModelId: '',
   modelPerPreset: {},
-  whisperModel: 'tiny',
+  whisperModel: 'small',
   whisperLanguage: 'auto',
   activeTheme: 'dark-blue',
   activeFewShotId: null,
