@@ -6,7 +6,7 @@
 ---
 
 ## Última actualización
-2026-06-14 — Hito: Corrección de pipeline de grabación y sincronización de UI (V.0.1-rec-ok)
+2026-06-14 — Hito: Logo oficial + ícono de app + loading screen de Whisper (v0.1-logo-loading)
 
 ## Estado general
 🟢 **Fase 1 a Fase 5: Implementación & Build** — Completado (IPC y Build robustecidos)
@@ -32,6 +32,11 @@
 - [x] Implementación de 4 mejoras de UX/UI: texto de transcripción editable al detener grabación con sincronización al estado global, unificación de indicadores de estado en barra inferior, retry LLM cada 15 segundos y modelo Whisper predeterminado 'small'
 - [x] Transcripción en vivo acumulada y editable — FUNCIONANDO
 - [x] Selector de modelos Whisper (tiny/small/medium) cargando localmente desde models/ — FUNCIONANDO
+- [x] Logo oficial guardado en `assets/logo.png` (fuente maestra, ojo con espiral dorado sobre fondo azul profundo)
+- [x] Íconos generados: `assets/icon.ico` (multi-res: 256/64/48/32/16), `assets/icon-512.png`, `assets/favicon.png` via `scripts/generate-icons.js` (sharp + to-ico)
+- [x] Ícono de ventana Electron configurado en `WindowManager.ts` (`icon: assets/icon.ico`)
+- [x] Loading screen fullscreen mientras carga Whisper: logo animado (pulse + glow dorado `#C9A84C`), texto "Cargando modelo Whisper...", dots bounce
+- [x] Flujo IPC completo: `whisper:ready` emitido desde `ipcHandlers.ts` → expuesto en `preload.ts` → escuchado en `renderer.ts` → fade-out del overlay
 
 ## Próximos pasos
 1. Instalar SoX en Windows (requerido para capturar audio vía node-record-lpcm16).
@@ -67,3 +72,4 @@
 | 2026-06-14 | Mejoras de UX & UI | Antigravity | Transcripción editable con sync de estado en tiempo real, barra de estado inferior consolidada, retry automático LLM de 15s y modelo por defecto 'small' |
 | 2026-06-14 | Fix de acumulación de texto & robustez | Antigravity | Corregida la acumulación de texto entre segmentos usando sessionText; prevenida caídas del proceso main capturando errores de stream EPIPE en subprocesses y registrando global exception logs |
 | 2026-06-14 | Selector de modelos Whisper local | Antigravity | Configurado download_root en whisper_server.py para leer modelos locales y verificado el soporte funcional en Ajustes |
+| 2026-06-14 | Logo oficial + ícono + loading screen | Antigravity | assets/logo.png + icon.ico + icon-512.png + favicon.png generados con scripts/generate-icons.js (sharp + to-ico); ícono en WindowManager; loading screen IPC completo (whisper:ready); build OK; tag v0.1-logo-loading pushed |
