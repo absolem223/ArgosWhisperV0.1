@@ -33,6 +33,7 @@ export class WindowManager {
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
+        devTools: process.env.NODE_ENV === 'development',
       },
     });
 
@@ -40,6 +41,10 @@ export class WindowManager {
 
     this.mainWindow.once('ready-to-show', () => {
       this.mainWindow?.show();
+    });
+
+    this.mainWindow.webContents.on('devtools-opened', () => {
+      this.mainWindow?.webContents.closeDevTools();
     });
 
     this.registerWindowHandlers();

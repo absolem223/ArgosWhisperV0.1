@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       dictionary-en:
-        specifier: ^4.0.0
-        version: 4.0.0
+        specifier: ^3.2.0
+        version: 3.2.0
       dictionary-es:
         specifier: ^3.0.0
         version: 3.2.0
@@ -460,8 +460,8 @@ packages:
   detect-node@2.1.0:
     resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}
 
-  dictionary-en@4.0.0:
-    resolution: {integrity: sha512-3NHnE1uq33ZE/CIwaZ6gqxa4BnglHnxeAcTM0GJ7cmtRGcvX9InMK/IqLtYcUMFCUpUNgybH+DzkqdgAo3F1zg==}
+  dictionary-en@3.2.0:
+    resolution: {integrity: sha512-oujbJhuplUTlDntmOoultEcNyk8ge7cFI6yXNn7eJvpbBJOhGNhWtK0XjOJsiwl4EfIeyvDKwGB95vJXv1d+lQ==}
 
   dictionary-es@3.2.0:
     resolution: {integrity: sha512-xhS9FKiTit9CHFkoSo1QOvTxvVFer2cxo2YRishLlC0EVO8uqWxZTv+oVm6BTLM7Ua8F7p25hRASD5s2TRNh9Q==}
@@ -1797,7 +1797,7 @@ snapshots:
   detect-node@2.1.0:
     optional: true
 
-  dictionary-en@4.0.0: {}
+  dictionary-en@3.2.0: {}
 
   dictionary-es@3.2.0: {}
 
