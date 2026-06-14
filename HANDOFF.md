@@ -6,7 +6,7 @@
 ---
 
 ## Última actualización
-2026-06-14 — Hito: Corrección de CSP EvalError en Webpack y compatibilidad con modo producción (V.0.1-csp-ok)
+2026-06-14 — Hito: Corrección de pipeline de grabación y sincronización de UI (V.0.1-rec-ok)
 
 ## Estado general
 🟢 **Fase 1 a Fase 5: Implementación & Build** — Completado (IPC y Build robustecidos)
@@ -26,6 +26,9 @@
 - [x] Conexión robusta de handlers IPC: limpieza de listeners de audio, recreación de WhisperService en caliente ante cambios de settings, y finalización de subproceso Python en `will-quit` de la aplicación
 - [x] Corrección de bugs bloqueantes: degradación de `dictionary-en` a v3 para compatibilidad CommonJS/Webpack (resolviendo `ERR_REQUIRE_ESM`), y restricción de apertura de DevTools en producción en `WindowManager.ts`
 - [x] Corrección de CSP EvalError en desarrollo configurando `source-map` en `webpack.renderer.config.js` y agregando soporte de compilación de producción dinámico
+- [x] Corrección de pipeline de grabación: `WhisperService.ts` detecta cierre prematuro del proceso Python y rechaza la Promise inmediatamente (en lugar de esperar 60 segundos de timeout)
+- [x] Corrección de sincronización de UI en `RecordButton.ts`: debouncing con `isActionPending` para evitar clicks superpuestos, y reset completo del estado visual (statusDot, statusDotSm, statusBarLabel, recordingIndicator) al recibir un error de transcripción
+- [x] Configuración automática del path de Python 3.11 (`C:\Users\Nahuel\AppData\Local\Programs\Python\Python311\python.exe`) en el archivo de settings persistido
 
 ## Próximos pasos
 1. Instalar SoX en Windows (requerido para capturar audio vía node-record-lpcm16).
@@ -57,3 +60,4 @@
 | 2026-06-14 | Conexión IPC & Robustez | Antigravity | Evitada duplicación de listeners, invalidación de WhisperService al cambiar ajustes, y cierre limpio de subprocess Python |
 | 2026-06-14 | Fix de Bloqueantes | Antigravity | Solucionado ERR_REQUIRE_ESM degradando dictionary-en a v3, y bloqueada apertura de DevTools en produccion |
 | 2026-06-14 | Fix de CSP EvalError | Antigravity | Configurado devtool a 'source-map' en webpack.renderer.config.js para respetar la CSP de la app |
+| 2026-06-14 | Fix de pipeline de grabación | Antigravity | WhisperService detecta crash prematuro de Python y rechaza Promise inmediatamente; RecordButton con debouncing y reset completo de UI en errores |

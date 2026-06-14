@@ -16,11 +16,24 @@ export function initRecordButton(state: AppState): void {
 
   if (!btn) return;
 
+  let isActionPending = false;
+
   btn.addEventListener('click', async () => {
-    if (!state.isRecording) {
-      await startRecording();
-    } else {
-      await stopRecording();
+    if (isActionPending) return;
+    isActionPending = true;
+    btn.disabled = true;
+
+    try {
+      if (!state.isRecording) {
+        await startRecording();
+      } else {
+        await stopRecording();
+      }
+    } catch (e) {
+      console.error('[RecordButton] Error toggling recording:', e);
+    } finally {
+      isActionPending = false;
+      btn.disabled = false;
     }
   });
 
@@ -78,10 +91,16 @@ export function initRecordButton(state: AppState): void {
   // Escuchar errores de transcripción
   window.argosAPI.transcription.onError((message) => {
     showError(message);
-    if (state.isRecording) {
-      state.isRecording = false;
-      btn!.classList.remove('recording');
-      recordingIndicator?.classList.add('hidden');
+    state.isRecording = false;
+    btn!.classList.remove('recording');
+    btn!.setAttribute('aria-pressed', 'false');
+    recordingIndicator?.classList.add('hidden');
+
+    if (statusDot) statusDot.className = 'status-dot connected';
+    if (statusDotSm) {
+      statusDotSm.style.background = '#22c55e';
+      statusDotSm.style.boxShadow = '0 0 4px #22c55e';
     }
+    if (statusBarLabel) statusBarLabel.textContent = 'Conectado';
   });
 }

@@ -47,6 +47,8 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
     const scriptPath = path.join(this.options.projectRoot, 'scripts', 'whisper_server.py');
 
     return new Promise((resolve, reject) => {
+      let resolved = false;
+
       this.process = spawn(this.options.pythonPath, [
         scriptPath,
         '--model', this.options.model,
@@ -57,11 +59,15 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
       });
 
       const timeout = setTimeout(() => {
+        if (resolved) return;
+        resolved = true;
         reject(new Error('Timeout esperando que Whisper esté listo'));
         this.stop().catch(console.error);
       }, 60000);
 
       if (!this.process.stdout) {
+        resolved = true;
+        clearTimeout(timeout);
         reject(new Error('No se pudo obtener stdout del proceso Whisper'));
         return;
       }
@@ -76,8 +82,11 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
           try {
             const msg = JSON.parse(line) as { type: string; text?: string; message?: string; model?: string };
             this.handleMessage(msg, () => {
-              clearTimeout(timeout);
-              resolve();
+              if (!resolved) {
+                resolved = true;
+                clearTimeout(timeout);
+                resolve();
+              }
             });
           } catch (e) {
             console.warn('[WhisperService] Línea no JSON:', line);
@@ -92,12 +101,21 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
       this.process.on('error', (err) => {
         console.error('[WhisperService] Error de proceso:', err);
         this.emit('error', err);
-        reject(err);
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          reject(err);
+        }
       });
 
       this.process.on('close', (code) => {
         console.log(`[WhisperService] Proceso cerrado con código ${code}`);
         this.process = null;
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          reject(new Error(`El proceso de Whisper terminó inesperadamente con código ${code}`));
+        }
       });
     });
   }
