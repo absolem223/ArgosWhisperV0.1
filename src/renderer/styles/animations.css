@@ -100,3 +100,118 @@
   z-index: calc(var(--z-panel) - 1);
   pointer-events: auto;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WHISPER LOADING SCREEN
+   Se muestra al arrancar la app, desaparece al recibir
+   el evento IPC "whisper:ready" desde el proceso main.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Keyframe: logo pulse + golden glow ──────────────────── */
+@keyframes wlo-logo-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 20px rgba(201, 168, 76, 0.35),
+      0 0 40px rgba(201, 168, 76, 0.15),
+      0 0  8px rgba(201, 168, 76, 0.20);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow:
+      0 0 35px rgba(201, 168, 76, 0.65),
+      0 0 65px rgba(201, 168, 76, 0.30),
+      0 0 15px rgba(201, 168, 76, 0.50);
+  }
+}
+
+/* ─── Keyframe: dots bounce ───────────────────────────────── */
+@keyframes wlo-dot-bounce {
+  0%, 80%, 100% { transform: translateY(0);   opacity: 0.4; }
+  40%           { transform: translateY(-6px); opacity: 1;   }
+}
+
+/* ─── Overlay fullscreen ──────────────────────────────────── */
+.whisper-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0d1a;
+  /* Sutil viñeta radial */
+  background-image: radial-gradient(ellipse at center,
+    rgba(13, 22, 51, 0.6) 0%,
+    #0a0d1a 70%
+  );
+  opacity: 1;
+  pointer-events: all;
+  transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Estado fade-out (añadido por JS) ────────────────────── */
+.whisper-loading-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ─── Contenedor centrado ─────────────────────────────────── */
+.wlo-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: fade-in 0.4s ease;
+}
+
+/* ─── Wrapper del logo (para glow sin recortar) ───────────── */
+.wlo-logo-wrapper {
+  width: 128px;
+  height: 128px;
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: wlo-logo-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Logo image ──────────────────────────────────────────── */
+.wlo-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 20px;
+  display: block;
+}
+
+/* ─── Texto "Cargando modelo Whisper..." ──────────────────── */
+.wlo-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: #7a8aaa;
+  margin: 0;
+  text-align: center;
+}
+
+/* ─── Dots de carga ───────────────────────────────────────── */
+.wlo-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.wlo-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #C9A84C;
+  animation: wlo-dot-bounce 1.4s ease-in-out infinite;
+}
+
+.wlo-dots span:nth-child(1) { animation-delay: 0s;    }
+.wlo-dots span:nth-child(2) { animation-delay: 0.16s; }
+.wlo-dots span:nth-child(3) { animation-delay: 0.32s; }

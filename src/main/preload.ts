@@ -87,6 +87,15 @@ contextBridge.exposeInMainWorld('argosAPI', {
     minimize: () => ipcRenderer.send(IPC.WINDOW_MINIMIZE),
     close: () => ipcRenderer.send(IPC.WINDOW_CLOSE),
   },
+
+  // ─── Whisper Status ──────────────────────────────────────────────────────
+  whisper: {
+    onReady: (cb: () => void) => {
+      const handler = () => cb();
+      ipcRenderer.on('whisper:ready', handler);
+      return () => ipcRenderer.removeListener('whisper:ready', handler);
+    },
+  },
 });
 
 // Type declaration para window.argosAPI en el renderer

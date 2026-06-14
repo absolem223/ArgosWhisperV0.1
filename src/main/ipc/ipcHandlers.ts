@@ -103,6 +103,8 @@ export function registerIpcHandlers(
         console.log('[IPC] Iniciando WhisperService.start()...');
         await whisper.start();
         console.log('[IPC] WhisperService listo y esperando audio.');
+        // Notificar al renderer que Whisper ya está listo → ocultar loading screen
+        mainWindow.webContents.send('whisper:ready');
       } else {
         console.log('[IPC] WhisperService ya existe, reutilizando.');
       }

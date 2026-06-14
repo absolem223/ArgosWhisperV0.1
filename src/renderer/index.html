@@ -13,6 +13,26 @@
 <body class="theme-dark-blue">
 
   <!-- ═══════════════════════════════════════════════════════════════
+       LOADING SCREEN — Se oculta cuando Whisper emite "ready"
+  ══════════════════════════════════════════════════════════════════ -->
+  <div id="whisper-loading-overlay" class="whisper-loading-overlay" aria-live="polite" role="status">
+    <div class="wlo-content">
+      <div class="wlo-logo-wrapper">
+        <img
+          src="../../../assets/logo.png"
+          alt="Argos Whisper logo"
+          class="wlo-logo"
+          id="wlo-logo-img"
+        />
+      </div>
+      <p class="wlo-text">Cargando modelo Whisper...</p>
+      <div class="wlo-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
        VENTANA PRINCIPAL
   ══════════════════════════════════════════════════════════════════ -->
   <div id="app-root">

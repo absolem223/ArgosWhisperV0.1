@@ -5,12 +5,16 @@
  */
 
 import { BrowserWindow, screen, ipcMain } from 'electron';
+import * as path from 'path';
 import { IPC } from '../../shared/ipc';
+
+// Ruta raíz del proyecto (dos niveles arriba de src/main/window/)
+const PROJECT_ROOT = path.resolve(__dirname, '..', '..', '..');
 
 export class WindowManager {
   private mainWindow: BrowserWindow | null = null;
 
-  create(preloadPath: string, rendererPath: string): BrowserWindow {
+  create(preloadPath: string, rendererPath: string, projectRoot?: string): BrowserWindow {
     const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize;
 
     this.mainWindow = new BrowserWindow({
@@ -23,6 +27,7 @@ export class WindowManager {
       y: 20,
       frame: false,
       transparent: false,
+      icon: path.join(projectRoot ?? PROJECT_ROOT, 'assets', 'icon.ico'),
       alwaysOnTop: true,
       resizable: true,
       skipTaskbar: false,

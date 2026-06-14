@@ -71,6 +71,9 @@ declare global {
         minimize(): void;
         close(): void;
       };
+      whisper: {
+        onReady(cb: () => void): () => void;
+      };
     };
   }
 }
@@ -156,5 +159,18 @@ async function init(): Promise<void> {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Escuchar cuando Whisper esté listo para ocultar la loading screen
+  if (window.argosAPI?.whisper?.onReady) {
+    window.argosAPI.whisper.onReady(() => {
+      const overlay = document.getElementById('whisper-loading-overlay');
+      if (overlay) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 600);
+      }
+    });
+  }
+
   init().catch(console.error);
 });
