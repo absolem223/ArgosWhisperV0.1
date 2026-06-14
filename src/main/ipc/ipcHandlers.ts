@@ -28,17 +28,39 @@ interface ElectronStore {
   set(key: string, value: unknown): void;
 }
 
+let whisper: WhisperService | null = null;
+let audio: AudioCaptureService | null = null;
+
+export async function cleanupIpcHandlers(): Promise<void> {
+  if (audio) {
+    try {
+      audio.stop();
+      audio.removeAllListeners();
+    } catch (err) {
+      console.error('[IPC] Error al limpiar audio:', err);
+    }
+  }
+  if (whisper) {
+    console.log('[IPC] Deteniendo WhisperService en cleanup...');
+    try {
+      await whisper.stop();
+    } catch (err) {
+      console.error('[IPC] Error al detener WhisperService:', err);
+    }
+    whisper = null;
+  }
+}
+
 export function registerIpcHandlers(
   mainWindow: BrowserWindow,
   projectRoot: string,
   dataRoot: string
 ): void {
   const store: ElectronStore = new Store({ name: 'argos-whisper-settings' });
-  const audio = new AudioCaptureService();
+  audio = new AudioCaptureService();
   const spellcheck = new SpellCheckService();
   const fewshot = new FewShotManager(dataRoot);
   let settings: AppSettings = store.get('settings', DEFAULT_SETTINGS);
-  let whisper: WhisperService | null = null;
   let llm: LMStudioRuntime = new LMStudioRuntime(settings.llmRuntimeUrl);
 
   // Inicializar spellcheck en background
@@ -73,19 +95,21 @@ export function registerIpcHandlers(
       }
 
       // Iniciar captura de audio
-      audio.on('data', (chunk: Buffer) => {
+      audio!.removeAllListeners();
+
+      audio!.on('data', (chunk: Buffer) => {
         whisper?.sendAudioChunk(chunk);
       });
 
-      audio.on('waveform', (amplitudes: number[]) => {
+      audio!.on('waveform', (amplitudes: number[]) => {
         mainWindow.webContents.send(IPC.AUDIO_WAVEFORM, amplitudes);
       });
 
-      audio.on('error', (err: Error) => {
+      audio!.on('error', (err: Error) => {
         mainWindow.webContents.send(IPC.TRANSCRIPTION_ERROR, { message: err.message });
       });
 
-      audio.start();
+      audio!.start();
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -94,8 +118,8 @@ export function registerIpcHandlers(
   });
 
   ipcMain.handle(IPC.TRANSCRIPTION_STOP, async () => {
-    audio.stop();
-    audio.removeAllListeners();
+    audio!.stop();
+    audio!.removeAllListeners();
     return { success: true };
   });
 
@@ -189,13 +213,28 @@ export function registerIpcHandlers(
     return settings;
   });
 
-  ipcMain.handle(IPC.SETTINGS_SET, (_event, partial: Partial<AppSettings>) => {
+  ipcMain.handle(IPC.SETTINGS_SET, async (_event, partial: Partial<AppSettings>) => {
+    const whisperSettingsChanged =
+      (partial.whisperModel && partial.whisperModel !== settings.whisperModel) ||
+      (partial.whisperLanguage && partial.whisperLanguage !== settings.whisperLanguage) ||
+      (partial.pythonPath && partial.pythonPath !== settings.pythonPath);
+
     settings = { ...settings, ...partial };
     store.set('settings', settings);
 
     // Si cambió la URL del runtime, recrear el cliente LLM
     if (partial.llmRuntimeUrl) {
       llm = new LMStudioRuntime(partial.llmRuntimeUrl);
+    }
+
+    if (whisperSettingsChanged && whisper) {
+      console.log('[IPC] Configuración de Whisper cambiada, recreando WhisperService...');
+      try {
+        await whisper.stop();
+      } catch (err) {
+        console.error('[IPC] Error al detener WhisperService:', err);
+      }
+      whisper = null;
     }
 
     return { success: true };

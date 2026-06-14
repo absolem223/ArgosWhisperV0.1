@@ -6,10 +6,10 @@
 ---
 
 ## Última actualización
-2026-06-13 — Hito: Construcción Completa, Configuración y Push Exitoso (V.0.1-build-ok)
+2026-06-14 — Hito: Conexión de Handlers IPC Reales y Robustez de Procesos (V.0.1-ipc-ok)
 
 ## Estado general
-🟢 **Fase 1 a Fase 5: Implementación & Build** — Completado
+🟢 **Fase 1 a Fase 5: Implementación & Build** — Completado (IPC robustecido)
 🟡 **Manual Testing** — En progreso
 
 ---
@@ -23,6 +23,7 @@
 - [x] Adición de configuración y UI para la ruta ejecutable de Python (`pythonPath`)
 - [x] Compilación exitosa sin errores de los bundles main y renderer (`npm run build`)
 - [x] Confirmación de que el proyecto inicia con `npm start` (pendiente test manual de grabación)
+- [x] Conexión robusta de handlers IPC: limpieza de listeners de audio, recreación de WhisperService en caliente ante cambios de settings, y finalización de subproceso Python en `will-quit` de la aplicación
 
 ## Próximos pasos
 1. Instalar SoX en Windows (requerido para capturar audio vía node-record-lpcm16).
@@ -51,3 +52,4 @@
 |-------|------|--------|-------|
 | 2026-06-13 | Inicialización SDD | Antigravity | Scaffold + SPEC + HANDOFF + git |
 | 2026-06-13 | Config & Build OK | Antigravity | Build exitoso, pythonPath configurable, push a GitHub |
+| 2026-06-14 | Conexión IPC & Robustez | Antigravity | Evitada duplicación de listeners, invalidación de WhisperService al cambiar ajustes, y cierre limpio de subprocess Python |

@@ -7,7 +7,7 @@
 import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import { WindowManager } from './window/WindowManager';
-import { registerIpcHandlers } from './ipc/ipcHandlers';
+import { registerIpcHandlers, cleanupIpcHandlers } from './ipc/ipcHandlers';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const DATA_ROOT = path.join(PROJECT_ROOT, 'data');
@@ -40,6 +40,17 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+let isQuitting = false;
+app.on('will-quit', async (event) => {
+  if (!isQuitting) {
+    event.preventDefault();
+    isQuitting = true;
+    console.log('[Main] Realizando limpieza de procesos...');
+    await cleanupIpcHandlers();
     app.quit();
   }
 });
