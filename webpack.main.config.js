@@ -3,7 +3,10 @@ const path = require('path');
 
 module.exports = {
   mode: 'development',
-  entry: './src/main/index.ts',
+  entry: {
+    index: './src/main/index.ts',
+    preload: './src/main/preload.ts',
+  },
   target: 'electron-main',
   module: {
     rules: [
@@ -22,7 +25,7 @@ module.exports = {
     },
   },
   output: {
-    filename: 'index.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'dist/main'),
   },
   externals: {
