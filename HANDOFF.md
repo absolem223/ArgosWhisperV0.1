@@ -6,7 +6,7 @@
 ---
 
 ## Última actualización
-2026-06-14 — Hito: Conexión de Handlers IPC Reales y Corrección de Bloqueantes (V.0.1-ipc-ok)
+2026-06-14 — Hito: Corrección de CSP EvalError en Webpack y compatibilidad con modo producción (V.0.1-csp-ok)
 
 ## Estado general
 🟢 **Fase 1 a Fase 5: Implementación & Build** — Completado (IPC y Build robustecidos)
@@ -25,6 +25,7 @@
 - [x] Confirmación de que el proyecto inicia con `npm start` (pendiente test manual de grabación)
 - [x] Conexión robusta de handlers IPC: limpieza de listeners de audio, recreación de WhisperService en caliente ante cambios de settings, y finalización de subproceso Python en `will-quit` de la aplicación
 - [x] Corrección de bugs bloqueantes: degradación de `dictionary-en` a v3 para compatibilidad CommonJS/Webpack (resolviendo `ERR_REQUIRE_ESM`), y restricción de apertura de DevTools en producción en `WindowManager.ts`
+- [x] Corrección de CSP EvalError en desarrollo configurando `source-map` en `webpack.renderer.config.js` y agregando soporte de compilación de producción dinámico
 
 ## Próximos pasos
 1. Instalar SoX en Windows (requerido para capturar audio vía node-record-lpcm16).
@@ -55,3 +56,4 @@
 | 2026-06-13 | Config & Build OK | Antigravity | Build exitoso, pythonPath configurable, push a GitHub |
 | 2026-06-14 | Conexión IPC & Robustez | Antigravity | Evitada duplicación de listeners, invalidación de WhisperService al cambiar ajustes, y cierre limpio de subprocess Python |
 | 2026-06-14 | Fix de Bloqueantes | Antigravity | Solucionado ERR_REQUIRE_ESM degradando dictionary-en a v3, y bloqueada apertura de DevTools en produccion |
+| 2026-06-14 | Fix de CSP EvalError | Antigravity | Configurado devtool a 'source-map' en webpack.renderer.config.js para respetar la CSP de la app |
