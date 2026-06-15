@@ -24,6 +24,7 @@ export function initTranscriptDisplay(state: AppState): void {
 
   // Escuchar resultados parciales (texto en vivo)
   window.argosAPI.transcription.onPartial((text) => {
+    if (!text.trim()) return;
     const displayText = sessionText ? `${sessionText} ${text}` : text;
     state.transcriptText = displayText;
     updateDisplay(displayText, true);
@@ -31,8 +32,9 @@ export function initTranscriptDisplay(state: AppState): void {
 
   // Escuchar resultados finales (segmento confirmado)
   window.argosAPI.transcription.onFinal((text) => {
+    if (!text.trim()) return;
     // Acumular texto final en la sesión
-    sessionText = sessionText ? `${sessionText} ${text}`.trim() : text.trim();
+    sessionText = sessionText ? `${sessionText} ${text.trim()}` : text.trim();
     state.transcriptText = sessionText;
     updateDisplay(sessionText, false);
   });
@@ -65,9 +67,8 @@ export function initTranscriptDisplay(state: AppState): void {
    */
   function enterEditMode(): void {
     if (!textEl) return;
-    if (!sessionText.trim()) return; // Sin texto, no hace falta editar
 
-    // Mostrar el texto acumulado completo en el elemento editable
+    // Al parar: mostrar sessionText completo y habilitar edición
     textEl.textContent = sessionText;
 
     textEl.setAttribute('contenteditable', 'true');
@@ -75,13 +76,15 @@ export function initTranscriptDisplay(state: AppState): void {
     textEl.classList.remove('active');
     textEl.focus();
 
-    // Mover cursor al final
-    const range = document.createRange();
-    const sel = window.getSelection();
-    range.selectNodeContents(textEl);
-    range.collapse(false);
-    sel?.removeAllRanges();
-    sel?.addRange(range);
+    // Mover cursor al final si hay texto
+    if (sessionText.trim()) {
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(textEl);
+      range.collapse(false);
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
   }
 
   /**

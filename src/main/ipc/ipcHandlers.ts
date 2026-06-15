@@ -24,7 +24,7 @@ import {
 const Store = require('electron-store');
 
 interface ElectronStore {
-  get<T>(key: string, defaultValue: T): T;
+  get<T>(key: string, defaultValue?: T): T | undefined;
   set(key: string, value: unknown): void;
 }
 
@@ -51,6 +51,16 @@ export async function cleanupIpcHandlers(): Promise<void> {
   }
 }
 
+/** Emite whisper:ready al renderer esperando a que la ventana esté completamente lista */
+function emitWhisperReady(mainWindow: BrowserWindow): void {
+  const send = () => mainWindow.webContents.send('whisper:ready');
+  if (mainWindow.webContents.isLoading()) {
+    mainWindow.webContents.once('did-finish-load', send);
+  } else {
+    send();
+  }
+}
+
 export function registerIpcHandlers(
   mainWindow: BrowserWindow,
   projectRoot: string,
@@ -60,19 +70,57 @@ export function registerIpcHandlers(
   audio = new AudioCaptureService();
   const spellcheck = new SpellCheckService();
   const fewshot = new FewShotManager(dataRoot);
-  let settings: AppSettings = store.get('settings', DEFAULT_SETTINGS);
+
+  // 1. Leer settings del store (electron-store)
+  // 3. Si no hay settings guardados, usar DEFAULT_SETTINGS (que tiene whisperModel = 'small')
+  let settings: AppSettings = store.get<AppSettings>('settings') || { ...DEFAULT_SETTINGS };
+
   let llm: LMStudioRuntime = new LMStudioRuntime(settings.llmRuntimeUrl);
 
   // Inicializar spellcheck en background
   spellcheck.initialize().catch(console.error);
 
+  // ─── Pre-carga de Whisper al arrancar ──────────────────────────────────────
+  // Lanzamos el proceso Python inmediatamente para que la loading screen
+  // se oculte en cuanto el modelo esté listo (sin necesidad de presionar REC).
+  {
+    console.log('[IPC] Pre-cargando WhisperService al inicio de la app...');
+    // 2. Usar settings.whisperModel para inicializar WhisperService
+    const modelToLoad = settings.whisperModel || DEFAULT_SETTINGS.whisperModel || 'small';
+    whisper = new WhisperService({
+      projectRoot,
+      pythonPath: settings.pythonPath,
+      model: modelToLoad,
+      language: settings.whisperLanguage,
+    });
+
+    whisper.on('error', (err: Error) => {
+      console.error('[IPC] ✘ ERROR en pre-carga de WhisperService:', err.message);
+    });
+
+    whisper.start()
+      .then(() => {
+        console.log('[IPC] ✔ WhisperService pre-cargado y listo → emitiendo whisper:ready');
+        emitWhisperReady(mainWindow);
+      })
+      .catch((err: Error) => {
+        console.error('[IPC] ✘ Falló la pre-carga de Whisper:', err.message);
+        // Si falla (e.g. Python no instalado o modelo no disponible),
+        // ocultamos la loading screen de todas formas para no bloquear la app.
+        console.warn('[IPC] Ocultando loading screen a pesar del fallo...');
+        setTimeout(() => emitWhisperReady(mainWindow), 500);
+        whisper = null;
+      });
+  }
+
   // ─── Transcripción ──────────────────────────────────────────────────────────
 
   ipcMain.handle(IPC.TRANSCRIPTION_START, async (_event, args: { language?: string }) => {
     try {
-      // Crear WhisperService si no existe
+      // Si no hay instancia (falló la pre-carga o fue destruida por cambio de settings),
+      // crear una nueva en el momento de grabar.
       if (!whisper) {
-        console.log('[IPC] ── TRANSCRIPTION_START ───────────────────────────');
+        console.log('[IPC] ── TRANSCRIPTION_START (sin pre-carga) ───────────');
         console.log('[IPC] settings.pythonPath:', settings.pythonPath);
         console.log('[IPC] settings.whisperModel:', settings.whisperModel);
         console.log('[IPC] language (args):', args?.language, '| settings.whisperLanguage:', settings.whisperLanguage);
@@ -85,29 +133,29 @@ export function registerIpcHandlers(
           language: args?.language ?? settings.whisperLanguage,
         });
 
-        whisper.onPartialResult((text) => {
-          console.log('[IPC] ✔ PARTIAL result recibido → enviando al renderer:', text);
-          mainWindow.webContents.send(IPC.TRANSCRIPTION_PARTIAL, { text });
-        });
-
-        whisper.onFinalResult((text) => {
-          console.log('[IPC] ✔✔ FINAL result recibido → enviando al renderer:', text);
-          mainWindow.webContents.send(IPC.TRANSCRIPTION_FINAL, { text });
-        });
-
-        whisper.on('error', (err: Error) => {
-          console.error('[IPC] ✘ ERROR de WhisperService:', err.message);
-          mainWindow.webContents.send(IPC.TRANSCRIPTION_ERROR, { message: err.message });
-        });
-
         console.log('[IPC] Iniciando WhisperService.start()...');
         await whisper.start();
         console.log('[IPC] WhisperService listo y esperando audio.');
-        // Notificar al renderer que Whisper ya está listo → ocultar loading screen
-        mainWindow.webContents.send('whisper:ready');
       } else {
-        console.log('[IPC] WhisperService ya existe, reutilizando.');
+        console.log('[IPC] WhisperService ya pre-cargado, reutilizando.');
       }
+
+      // Limpiar callbacks previos y registrar de nuevo (evita duplicados al re-usar instancia)
+      whisper.clearCallbacks();
+      whisper.onPartialResult((text) => {
+        console.log('[IPC] ✔ PARTIAL result recibido → enviando al renderer:', text);
+        mainWindow.webContents.send(IPC.TRANSCRIPTION_PARTIAL, { text });
+      });
+
+      whisper.onFinalResult((text) => {
+        console.log('[IPC] ✔✔ FINAL result recibido → enviando al renderer:', text);
+        mainWindow.webContents.send(IPC.TRANSCRIPTION_FINAL, { text });
+      });
+
+      whisper.on('error', (err: Error) => {
+        console.error('[IPC] ✘ ERROR de WhisperService:', err.message);
+        mainWindow.webContents.send(IPC.TRANSCRIPTION_ERROR, { message: err.message });
+      });
 
       // Iniciar captura de audio
       audio!.removeAllListeners();

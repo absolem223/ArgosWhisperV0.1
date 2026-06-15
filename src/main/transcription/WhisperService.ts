@@ -233,6 +233,13 @@ export class WhisperService extends EventEmitter implements ITranscriptionEngine
     this.finalCallbacks.push(cb);
   }
 
+  /** Limpia todos los callbacks acumulados (para evitar duplicados al re-usar la instancia) */
+  clearCallbacks(): void {
+    this.partialCallbacks = [];
+    this.finalCallbacks = [];
+    this.removeAllListeners('error');
+  }
+
   get isRunning(): boolean {
     return this.process !== null;
   }
