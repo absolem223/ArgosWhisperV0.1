@@ -9,8 +9,12 @@
 import { AppState } from '../../renderer';
 
 export function initTranscriptDisplay(state: AppState): void {
+  console.log('[TranscriptDisplay] elemento encontrado:', !!document.getElementById('transcript-text'));
   const textEl = document.getElementById('transcript-text');
-  if (!textEl) return;
+  if (!textEl) {
+    console.error('[TranscriptDisplay] Elemento #transcript-text no encontrado en el DOM.');
+    return;
+  }
 
   let sessionText = '';
 
@@ -43,6 +47,11 @@ export function initTranscriptDisplay(state: AppState): void {
     if (!textEl) return;
     textEl.classList.remove('placeholder');
 
+    // Forzar font size, alineación y line-height
+    textEl.style.fontSize = '19px';
+    textEl.style.textAlign = 'center';
+    textEl.style.lineHeight = '1.7';
+
     // Solo actualizar textContent si no está en modo editable
     if (!textEl.isContentEditable) {
       textEl.textContent = text;
@@ -50,8 +59,10 @@ export function initTranscriptDisplay(state: AppState): void {
 
     if (isPartial) {
       textEl.classList.add('active'); // Muestra cursor parpadeante
+      textEl.style.color = '#a0aec0'; // Gris claro durante grabación (parcial)
     } else {
       textEl.classList.remove('active');
+      textEl.style.color = '#e2e8f0'; // Blanco suave confirmado
     }
 
     // Auto-scroll al fondo
@@ -70,6 +81,7 @@ export function initTranscriptDisplay(state: AppState): void {
 
     // Al parar: mostrar sessionText completo y habilitar edición
     textEl.textContent = sessionText;
+    textEl.style.color = '#ffffff'; // Color blanco al parar la grabación
 
     textEl.setAttribute('contenteditable', 'true');
     textEl.classList.add('editable');
@@ -104,6 +116,7 @@ export function initTranscriptDisplay(state: AppState): void {
     textEl.classList.remove('editable');
     textEl.classList.add('placeholder');
     textEl.textContent = 'Presiona REC para comenzar a transcribir...';
+    textEl.style.color = ''; // Resetea al color base
     sessionText = '';
     state.transcriptText = '';
   }
